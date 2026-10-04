@@ -1,0 +1,111 @@
+=== RUN   TestScenario1LeaderElection
+    scenarios_test.go:183: [  0.040s] cluster of 3 nodes started: map[1:http://127.0.0.1:53594 2:http://127.0.0.1:53595 3:http://127.0.0.1:53596]
+    scenarios_test.go:187: [  0.204s] node 1 became leader in term 1, 203ms after cluster start
+    scenarios_test.go:211: [  0.205s] node 1 transition FOLLOWER -> FOLLOWER term 0: node started
+    scenarios_test.go:211: [  0.205s] node 1 transition FOLLOWER -> CANDIDATE term 1: no heartbeat for 191 ms (election timeout 189 ms)
+    scenarios_test.go:211: [  0.205s] node 1 transition CANDIDATE -> LEADER term 1: received 2 of 3 votes (quorum 2)
+--- PASS: TestScenario1LeaderElection (0.21s)
+=== RUN   TestScenario2TaskDistribution
+    scenarios_test.go:223: [  0.001s] cluster of 3 nodes started: map[1:http://127.0.0.1:53607 2:http://127.0.0.1:53608 3:http://127.0.0.1:53609]
+    scenarios_test.go:247: [  0.208s] distribution by node: map[1:4 2:3 3:3]
+    scenarios_test.go:248: [  0.249s] all 10 tasks known to nodes [1 2 3], registry epoch 1 version 13, per node map[1:4 2:3 3:3]
+--- PASS: TestScenario2TaskDistribution (0.25s)
+=== RUN   TestOnlyLeaderAcceptsTasks
+    scenarios_test.go:253: [  0.001s] cluster of 3 nodes started: map[1:http://127.0.0.1:53620 2:http://127.0.0.1:53621 3:http://127.0.0.1:53622]
+    scenarios_test.go:263: [  0.205s] POST /task to follower 2 -> 307 "This node is not the leader" leader="node1" address="http://127.0.0.1:53620"
+    scenarios_test.go:263: [  0.206s] POST /task to follower 3 -> 307 "This node is not the leader" leader="node1" address="http://127.0.0.1:53620"
+    scenarios_test.go:276: [  0.206s] POST /task to leader 1 -> 201 task 1 on node 1
+--- PASS: TestOnlyLeaderAcceptsTasks (0.21s)
+=== RUN   TestScenario3LeaderFailure
+    scenarios_test.go:281: [  0.001s] cluster of 3 nodes started: map[1:http://127.0.0.1:53630 2:http://127.0.0.1:53631 3:http://127.0.0.1:53632]
+    scenarios_test.go:284: [  0.201s] leader 1 term 1
+    scenarios_test.go:288: [  0.201s] leader 1 killed
+    scenarios_test.go:291: [  0.358s] new leader 2 term 2 ready after 156ms
+    scenarios_test.go:306: [  0.358s] node 2: FOLLOWER -> CANDIDATE term 2 at +151ms: no heartbeat for 158 ms (election timeout 157 ms)
+    scenarios_test.go:306: [  0.358s] node 2: CANDIDATE -> LEADER term 2 at +151ms: received 2 of 3 votes (quorum 2)
+    scenarios_test.go:316: [  0.358s] failure detected after 151ms, new leader elected after 151ms
+--- PASS: TestScenario3LeaderFailure (0.36s)
+=== RUN   TestScenario4And5TasksSurviveLeaderChange
+    scenarios_test.go:328: [  0.001s] cluster of 3 nodes started: map[1:http://127.0.0.1:53646 2:http://127.0.0.1:53647 3:http://127.0.0.1:53648]
+    scenarios_test.go:330: [  0.222s] submitted 10 tasks [1 2 3 4 5 6 7 8 9 10] -> nodes [1 2 3 1 2 3 1 2 3 1]
+    scenarios_test.go:331: [  0.249s] all 10 tasks known to nodes [1 2 3], registry epoch 1 version 13, per node map[1:4 2:3 3:3]
+    scenarios_test.go:334: [  0.249s] leader 1 killed
+    scenarios_test.go:336: [  0.437s] new leader 2 ready after 187ms
+    scenarios_test.go:353: [  0.441s] 5 tasks after leader change distributed over [2 3]
+    scenarios_test.go:354: [  0.490s] all 15 tasks known to nodes [2 3], registry epoch 2 version 19, per node map[2:8 3:7]
+--- PASS: TestScenario4And5TasksSurviveLeaderChange (0.49s)
+=== RUN   TestScenario6FollowerFailure
+    scenarios_test.go:360: [  0.001s] cluster of 3 nodes started: map[1:http://127.0.0.1:53668 2:http://127.0.0.1:53669 3:http://127.0.0.1:53671]
+    scenarios_test.go:363: [  0.207s] submitted 6 tasks [1 2 3 4 5 6] -> nodes [1 2 3 1 2 3]
+    scenarios_test.go:371: [  0.208s] follower 2 killed, it held 2 tasks
+    scenarios_test.go:390: [  0.511s] tasks of node 2 reassigned after 302ms
+    scenarios_test.go:392: [  0.515s] submitted 4 tasks [7 8 9 10] -> nodes [1 3 1 3]
+    scenarios_test.go:400: [  0.553s] all 10 tasks known to nodes [1 3], registry epoch 1 version 15, per node map[1:5 3:5]
+--- PASS: TestScenario6FollowerFailure (0.55s)
+=== RUN   TestScenario7FollowerRecovery
+    scenarios_test.go:406: [  0.001s] cluster of 3 nodes started: map[1:http://127.0.0.1:53689 2:http://127.0.0.1:53690 3:http://127.0.0.1:53691]
+    scenarios_test.go:409: [  0.206s] submitted 6 tasks [1 2 3 4 5 6] -> nodes [1 2 3 1 2 3]
+    scenarios_test.go:426: [  0.206s] all 6 tasks completed
+    scenarios_test.go:433: [  0.206s] follower 2 killed
+    scenarios_test.go:435: [  0.711s] submitted 2 tasks [7 8] -> nodes [1 3]
+    scenarios_test.go:440: [  0.711s] follower 2 restarted with empty memory
+    scenarios_test.go:441: [  0.758s] all 8 tasks known to nodes [1 2 3], registry epoch 1 version 16, per node map[1:3 2:2 3:3]
+    scenarios_test.go:457: [  0.760s] restarted node 2 recovered 2 own tasks from registry
+    scenarios_test.go:474: [  0.768s] submitted 3 tasks [9 10 11] -> nodes [1 2 3]
+    scenarios_test.go:482: [  0.808s] all 11 tasks known to nodes [1 2 3], registry epoch 1 version 22, per node map[1:4 2:3 3:4]
+--- PASS: TestScenario7FollowerRecovery (0.81s)
+=== RUN   TestQuorumLossAndRecovery
+    scenarios_test.go:488: [  0.001s] cluster of 3 nodes started: map[1:http://127.0.0.1:53714 2:http://127.0.0.1:53715 3:http://127.0.0.1:53716]
+    scenarios_test.go:490: [  0.230s] submitted 6 tasks [1 2 3 4 5 6] -> nodes [1 2 3 1 2 3]
+    scenarios_test.go:499: [  0.233s] followers [2 3] killed, leader 1 left alone
+    scenarios_test.go:519: [  0.549s] node 1 stepped down after 317ms: lost quorum: 1 of 3 nodes answered heartbeats within 300 ms
+    scenarios_test.go:524: [  0.550s] POST /task without quorum -> 503 "This node is not the leader; leader is unknown, election in progress"
+    scenarios_test.go:532: [  0.550s] node 2 restarted
+    scenarios_test.go:534: [  0.710s] leader 1 elected 160ms after quorum restored
+    scenarios_test.go:535: [  0.712s] all 6 tasks known to nodes [1 2], registry epoch 2 version 6, per node map[1:6]
+    scenarios_test.go:536: [  0.715s] submitted 2 tasks [7 8] -> nodes [2 1]
+    scenarios_test.go:537: [  0.764s] all 8 tasks known to nodes [1 2], registry epoch 2 version 9, per node map[1:7 2:1]
+--- PASS: TestQuorumLossAndRecovery (0.76s)
+PASS
+ok  	lab3/internal/cluster	5.951s
+=== RUN   TestRoundRobinSkipsDeadNodes
+--- PASS: TestRoundRobinSkipsDeadNodes (0.00s)
+=== RUN   TestSubmitRequiresLeaderAndSync
+--- PASS: TestSubmitRequiresLeaderAndSync (0.00s)
+=== RUN   TestAcceptRejectsStaleTerm
+--- PASS: TestAcceptRejectsStaleTerm (0.00s)
+=== RUN   TestApplyStatusReport
+--- PASS: TestApplyStatusReport (0.00s)
+=== RUN   TestReconcileOwnTasks
+2026/10/04 22:53:46 INFO own tasks reconciled with leader registry node=2 adopted=2 dropped=1
+--- PASS: TestReconcileOwnTasks (0.04s)
+=== RUN   TestMergeSnapshots
+--- PASS: TestMergeSnapshots (0.00s)
+=== RUN   TestMergeSkipsUnchangedReplica
+--- PASS: TestMergeSkipsUnchangedReplica (0.00s)
+=== RUN   TestRegistryUnchanged
+--- PASS: TestRegistryUnchanged (0.00s)
+PASS
+ok  	lab3/internal/queue	2.034s
+=== RUN   TestNewValidatesConfig
+--- PASS: TestNewValidatesConfig (0.00s)
+=== RUN   TestVoteOncePerTerm
+--- PASS: TestVoteOncePerTerm (0.00s)
+=== RUN   TestAppendEntriesTermRules
+--- PASS: TestAppendEntriesTermRules (0.00s)
+=== RUN   TestCandidateStepsDownOnHigherTermVoteResponse
+--- PASS: TestCandidateStepsDownOnHigherTermVoteResponse (0.00s)
+=== RUN   TestElectionAndReelection
+    raft_test.go:204: leader 2 elected in term 1 after 175.1087ms
+    raft_test.go:217: new leader 3 in term 2 after 163.985ms
+--- PASS: TestElectionAndReelection (0.34s)
+=== RUN   TestNoLeaderWithoutQuorum
+    raft_test.go:244: survivor 1 stays CANDIDATE, term 1 -> 4
+--- PASS: TestNoLeaderWithoutQuorum (0.98s)
+=== RUN   TestLeaderStepsDownWithoutQuorum
+    raft_test.go:275: leader 2 stepped down after 300.5679ms: lost quorum: 1 of 3 nodes answered heartbeats within 300 ms
+--- PASS: TestLeaderStepsDownWithoutQuorum (0.47s)
+=== RUN   TestElectionTimeoutIsRandomInRange
+--- PASS: TestElectionTimeoutIsRandomInRange (0.00s)
+PASS
+ok  	lab3/internal/raft	2.541s

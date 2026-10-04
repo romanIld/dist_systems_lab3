@@ -1,0 +1,25 @@
+# Cluster of 3 nodes. Each node listens on 8080 inside the network; host ports 8081-8083.
+#   docker compose up --build -d
+#   docker compose stop node1      # simulate failure
+#   docker compose start node1     # recovery with empty memory
+
+name: lab3
+
+x-node: &node
+  build: .
+  image: lab3-raftnode
+  restart: "no"
+
+services:
+  node1:
+    <<: *node
+    command: ["-id", "1", "-peers", "1=http://node1:8080,2=http://node2:8080,3=http://node3:8080", "-listen", ":8080"]
+    ports: ["8081:8080"]
+  node2:
+    <<: *node
+    command: ["-id", "2", "-peers", "1=http://node1:8080,2=http://node2:8080,3=http://node3:8080", "-listen", ":8080"]
+    ports: ["8082:8080"]
+  node3:
+    <<: *node
+    command: ["-id", "3", "-peers", "1=http://node1:8080,2=http://node2:8080,3=http://node3:8080", "-listen", ":8080"]
+    ports: ["8083:8080"]
